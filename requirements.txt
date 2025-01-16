@@ -1,0 +1,11 @@
+azure-ai-documentintelligence==1.0.0b4  # Azure Document Intelligence SDK (Beta)
+azure-ai-formrecognizer                # Azure Form Recognizer for document analysis
+spacy                                  # NLP library for text processing
+openai                                 # OpenAI API for GPT and related tasks
+openpyxl                               # Reading and writing Excel files
+pydantic                               # Data validation and settings management
+python-dotenv                          # Loading environment variables from .env files
+streamlit==1.24.0                      # Web app framework for data apps
+pandas==1.5.3                          # Data analysis and manipulation
+numpy==1.24.2                          # Numerical computations
+scikit-learn==1.2.1                    # Machine learning algorithms and tools
