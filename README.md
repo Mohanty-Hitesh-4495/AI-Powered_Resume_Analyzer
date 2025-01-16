@@ -1,1 +1,1 @@
-"# Generative AI-Powered Resume Analyzer" 
+# Generative AI-Powered Resume Analyzer 
