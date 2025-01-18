@@ -1,6 +1,7 @@
 from openai import OpenAI
 import pandas as pd
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 from dotenv import load_dotenv
 from ocr_service import analyze_read_return
 import os
@@ -153,20 +154,38 @@ def append_to_excel(file_path, data, header):
         workbook = load_workbook(file_path)
         sheet = workbook.active
 
+        # appending each row
         for row in data:
             sheet.append(row)
+        
+        # adjusting column widths
+        for col_idx, col_name in enumerate(header, start=1):
+            max_len = max(
+                len(str(col_name)),  # Length of the header
+                max(
+                    len(str(sheet.cell(row=row_idx, column=col_idx).value or ""))  # Length of cell values
+                    for row_idx in range(1, sheet.max_row + 1)
+                ) 
+            ) + 2  # Add padding
+            sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = max_len
 
         workbook.save(file_path)
-        print(f"Data appended to {file_path}")
+        print(f"Data appended to {file_path} with adjusted column spacing.")
     except FileNotFoundError:
-        # If file does not exist, create a new file
+        # If the file does not exist, create it
         df = pd.DataFrame(data, columns=header)
-        df.to_excel(file_path, index=False)
-        print(f"New file created at {file_path}")
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
 
+            # Adjust column widths for the new file
+            worksheet = writer.sheets['Sheet1']
+            for idx, col in enumerate(df.columns):
+                max_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                worksheet.set_column(idx, idx, max_len)
+        print(f"New file created at {file_path} with adjusted column spacing.")
 
 if __name__ == "__main__":
-    path_to_doc = "Resume-Syed Sadiqu Hussain.pdf"
+    path_to_doc = "sample_resumes\Resume-Syed Sadiqu Hussain.pdf"
     with open(path_to_doc, "rb") as f:
         extracted_text = analyze_read_return(f)
 
@@ -207,22 +226,3 @@ if __name__ == "__main__":
         
     except json.JSONDecodeError as e:
         print(f"Failed to parse JSON: {e}")
-
-    """ used for batch processing for updating data from multiple resuems at a time """
-    # cleaning and parsing the output as JSON and saving the data in Excel file
-    # try:
-    #     cleaned_details = extracted_details.strip("```json").strip("```").strip()
-    #     details_dict = json.loads(cleaned_details)
-
-    #     header = list(details_dict.keys())
-    #     data_row = [list(details_dict.values())]
-
-    #     file_path = "parsed_resumes.xlsx"
-
-    #     # Append data to the Excel file
-    #     append_to_excel(file_path, data_row, header)
-
-    # except json.JSONDecodeError as e:
-    #     print(f"Failed to parse JSON: {e}")
-    #     print("Extracted text was:")
-    #     print(extracted_details)
