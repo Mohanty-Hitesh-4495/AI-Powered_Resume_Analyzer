@@ -35,12 +35,11 @@ def extract_details_with_gpt(resume_text):
             - Course
             - Discipline
             - CGPA/Percentage
-            - Key Skills (from skills section and project & experience section)
+            - Key Skills
             - Gen AI Experience Score (Keep it empty)
             - AI/ML Experience Score (Keep it empty)
             - Overall Score (Keep it empty)
             - Supporting Information (most highlighting informations e.g., certifications, internships, projects)
-            - Suggestions for improvement (keep it empty)
 
             Resume Text:
             {resume_text}
@@ -60,7 +59,6 @@ def extract_details_with_gpt(resume_text):
             "AI/ML Experience Score": 0,
             "Overall Score": 0,
             "Supporting Information": ""
-            "Suggestions for improvement" = ""
             }}
             """
         }
@@ -132,15 +130,14 @@ def evaluate_resume(resume_text):
     "overall_score": {{
         "score": <weighted average between 0-3>,
         "justification": "<explanation of the overall score>"
-    }},
-    "suggestions": "<concise suggestions for improvement and must give>"
+    }}
     }}
     """
         }
     ]
 
 
-    # Call OpenAI API
+    # clling OpenAI API
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
@@ -161,23 +158,24 @@ def append_to_excel(file_path, data, header):
         # adjusting column widths
         for col_idx, col_name in enumerate(header, start=1):
             max_len = max(
-                len(str(col_name)),  # Length of the header
+                len(str(col_name)),  # length of header
                 max(
-                    len(str(sheet.cell(row=row_idx, column=col_idx).value or ""))  # Length of cell values
+                    len(str(sheet.cell(row=row_idx, column=col_idx).value or ""))  # length of cell values
                     for row_idx in range(1, sheet.max_row + 1)
                 ) 
-            ) + 2  # Add padding
+            ) + 2  # padding
             sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = max_len
 
         workbook.save(file_path)
         print(f"Data appended to {file_path} with adjusted column spacing.")
+
     except FileNotFoundError:
-        # If the file does not exist, create it
+        # if the file does not exist, create it
         df = pd.DataFrame(data, columns=header)
         with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
             df.to_excel(writer, index=False, sheet_name='Sheet1')
 
-            # Adjust column widths for the new file
+            # adjusting column widths for the new file
             worksheet = writer.sheets['Sheet1']
             for idx, col in enumerate(df.columns):
                 max_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
