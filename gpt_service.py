@@ -1,7 +1,6 @@
 from openai import OpenAI
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
 from dotenv import load_dotenv
 from ocr_service import analyze_read_return
 import os
@@ -39,7 +38,7 @@ def extract_details_with_gpt(resume_text):
             - Gen AI Experience Score (Keep it empty)
             - AI/ML Experience Score (Keep it empty)
             - Overall Score (Keep it empty)
-            - Supporting Information (most highlighting informations e.g., certifications, internships, projects)
+            - Supporting Information (2 most highlighting informations e.g., certifications, internships, projects)
 
             Resume Text:
             {resume_text}
@@ -63,6 +62,7 @@ def extract_details_with_gpt(resume_text):
             """
         }
     ]
+
     # calling GPT model
     response = openai.chat.completions.create(
         model="gpt-4o-mini",  
@@ -70,19 +70,6 @@ def extract_details_with_gpt(resume_text):
         temperature=0.5
     )
     return response.choices[0].message.content.strip()
-
-# defining questions for each category
-gen_ai_questions = [
-    "Does the candidate have experience with GPT or other Generative AI models?",
-    "Has the candidate worked on advanced areas like Agentic RAG or Evals?",
-    "What is the candidate's exposure to prompt engineering or embeddings?"
-]
-
-ai_ml_questions = [
-    "What is the candidate's experience with machine learning models like regression or classification?",
-    "Has the candidate implemented deep learning projects using TensorFlow or PyTorch?",
-    "Has the candidate published research or worked on advanced AI topics?"
-]
 
 # OpenAI API scoring function
 def evaluate_resume(resume_text):
@@ -101,41 +88,31 @@ def evaluate_resume(resume_text):
     Scoring System:
     - Gen AI Experience Score:
     0 (Unexposed): No exposure or experience with Gen AI concepts or tools.
-    1 (Exposed): Basic understanding or exposure to foundational Gen AI concepts (e.g., GPT basics).
+    1 (Exposed): Basic understanding or exposure to foundational Gen AI concepts (e.g., GPT basics, etc).
     2 (Hands-on): Practical experience working on tasks involving prompt engineering, fine-tuning, or embeddings.
     3 (Advanced): Advanced work such as Agentic RAG, evaluation frameworks (Evals), or building agent-based systems.
 
     - AI/ML Experience Score:
     0 (Unexposed): No exposure or experience with AI/ML concepts or tools.
-    1 (Exposed): Basic understanding of AI/ML concepts (e.g., regression, classification).
-    2 (Hands-on): Implemented projects using ML/DL frameworks (e.g., TensorFlow, PyTorch).
+    1 (Exposed): Basic understanding of AI/ML concepts (e.g., regression, classification, etc).
+    2 (Hands-on): Implemented projects using ML/DL frameworks (e.g., TensorFlow, PyTorch, etc).
     3 (Advanced): Published research, implemented innovative models, or production-level deployment of ML/DL solutions.
-
-    Key Questions for Gen AI Scoring:
-    {gen_ai_questions}
-
-    Key Questions for AI/ML Scoring:
-    {ai_ml_questions}
 
     Return the response as a JSON object with the following structure:
     {{
     "gen_ai_experience_score": {{
-        "score": <integer between 0-3>,
-        "justification": "<reason for the assigned score>"
+        "score": <integer between 0-3>
     }},
     "ai_ml_experience_score": {{
-        "score": <integer between 0-3>,
-        "justification": "<reason for the assigned score>"
+        "score": <integer between 0-3>
     }},
     "overall_score": {{
-        "score": <weighted average between 0-3>,
-        "justification": "<explanation of the overall score>"
+        "score": <float weighted average of AI/ML and Gen-AI Scores between 0-3 with 2 decimal>
     }}
     }}
     """
         }
     ]
-
 
     # clling OpenAI API
     response = openai.chat.completions.create(
@@ -153,6 +130,7 @@ def append_to_excel(file_path, data, header):
 
         # appending each row
         for row in data:
+            row = [', '.join(element) if isinstance(element, list) else element for element in row]
             sheet.append(row)
         
         # adjusting column widths
@@ -167,7 +145,7 @@ def append_to_excel(file_path, data, header):
             sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = max_len
 
         workbook.save(file_path)
-        print(f"Data appended to {file_path} with adjusted column spacing.")
+        print(f"Data appended to {file_path}.")
 
     except FileNotFoundError:
         # if the file does not exist, create it
@@ -183,7 +161,7 @@ def append_to_excel(file_path, data, header):
         print(f"New file created at {file_path} with adjusted column spacing.")
 
 if __name__ == "__main__":
-    path_to_doc = "sample_resumes\Resume-Syed Sadiqu Hussain.pdf"
+    path_to_doc = "sample_resumes/Resume-Syed Sadiqu Hussain.pdf"
     with open(path_to_doc, "rb") as f:
         extracted_text = analyze_read_return(f)
 
@@ -206,7 +184,6 @@ if __name__ == "__main__":
         details_dict["Gen-AI Experience Score"] = scores.get("gen_ai_experience_score", {}).get("score", 0)
         details_dict["AI/ML Experience Score"] = scores.get("ai_ml_experience_score", {}).get("score", 0)
         details_dict["Overall Score"] = scores.get("overall_score", {}).get("score",0)
-        details_dict["Suggestions for improvement"] = scores.get("Suggestions", "")
 
         df = pd.DataFrame([details_dict])
 
