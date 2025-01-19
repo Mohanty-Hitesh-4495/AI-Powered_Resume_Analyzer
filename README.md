@@ -11,8 +11,8 @@ This project is a tool for extracting structured information from resumes using 
 Before running the project, ensure you have the following:
 - Python: Version 3.10 or higher.
 - Python IDE of your choice
-- Virtual Environment: Recommended to keep dependencies iinsolated.
-- API Key: OpenAI API key for GPT services and Azure API key fro document intelligence. (Available in zip folder or you may create your own)<br>
+- Virtual Environment: Recommended to keep dependencies isolated.
+- API Key: OpenAI API key for GPT services and Azure API key for document intelligence. (Available in zip folder or you may create your own)<br>
 (If you are using your own API key, then update Azure doc-intelligence endpoint)
 
 ## Setup Instructions
@@ -23,7 +23,7 @@ git clone https://github.com/Mohanty-Hitesh-4495/Generative_AI-Powered_Resume_An
 ```
 ### 2. Create a Virtual Python Environment
 However, a virtual Python environment (venv) is not necessary to run this project. 
-It is recommended to use a virtual environment as ngrok and other packages are 
+It is recommended to use a virtual environment as few packages are 
 specific to this project and may clash with other versions.
 <br>To create a new python venv. First, open the cloned repo in your favourite IDE
 and open the terminal. Run this command while being in the project's directory.
@@ -66,7 +66,8 @@ The final Project Structure should look like this:
 |
 |-- sample_resumes/        # Directory for storing resume files
 |-- output_files/          # Directory for saving analyzed Excel files
-|-- app.y                  # Streamlit application 
+|-- .env                   # Environment variables 
+|-- app.py                 # Streamlit application 
 |-- batch_processing.py    # Main script for batch processing resumes
 |-- gpt_service.py         # Script for GPT-based resume text processing
 |-- ocr_service.py         # Script for AZURE Document Intelligence
