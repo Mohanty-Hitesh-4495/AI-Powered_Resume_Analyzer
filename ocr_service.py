@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv(Path(".env"))
 endpoint = "https://syedsadiquh-doc-intelligence.cognitiveservices.azure.com/"
-key: str = str(os.getenv("azure_api_key"))
+key: str = str(os.getenv("AZURE_API_KEY"))
 
 
 def analyze_read_print(file):
